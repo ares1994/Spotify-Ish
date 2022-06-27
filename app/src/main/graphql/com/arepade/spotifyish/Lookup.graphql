@@ -1,0 +1,20 @@
+query Lookup($mbid: MBID!, $first: Int) {
+    lookup {
+        artist(mbid: $mbid) {
+            country
+            releases(first: $first) {
+                nodes {
+                    coverArtArchive {
+                        images {
+                            thumbnails {
+                                small
+                            }
+                        }
+                    }
+                    title
+                    id
+                }
+            }
+        }
+    }
+}

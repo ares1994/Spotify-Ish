@@ -1,0 +1,23 @@
+query SearchArtists($query: String!, $first: Int, $after: String) {
+    search {
+        artists(query: $query, first: $first, after: $after) {
+            nodes {
+                name
+                mbid
+                rating {
+                    value
+                }
+                fanArt {
+                    thumbnails {
+                        url(size: PREVIEW)
+                    }
+                }
+            }
+            pageInfo {
+                endCursor
+                startCursor
+                hasNextPage
+            }
+        }
+    }
+}
