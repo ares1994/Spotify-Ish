@@ -8,4 +8,6 @@
     <string name="rating">Rating:</string>
     <string name="spotify_logo">Spotify Logo</string>
     <string name="bookmark">Bookmark</string>
+    <string name="bookmarks">Bookmarks</string>
+    <string name="details">Details</string>
 </resources>

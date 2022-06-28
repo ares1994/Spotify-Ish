@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.arepade.spotifyish.MainActivity
 import com.arepade.spotifyish.R
 import com.arepade.spotifyish.adapters.ReleaseAdapter
 import com.arepade.spotifyish.databinding.FragmentDetailsBinding
@@ -81,6 +82,7 @@ class DetailsFragment : Fragment(R.layout.fragment_details) {
 
 
     private fun initializeViews() {
+        (requireActivity() as MainActivity).supportActionBar?.title = getString(R.string.details)
 
         binding.recyclerView.apply {
             adapter = releaseAdapter

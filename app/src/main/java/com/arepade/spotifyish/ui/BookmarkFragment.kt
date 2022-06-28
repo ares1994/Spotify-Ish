@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.arepade.spotifyish.MainActivity
 import com.arepade.spotifyish.R
 import com.arepade.spotifyish.adapters.ArtistAdapter
 import com.arepade.spotifyish.databinding.FragmentBookmarkBinding
@@ -64,6 +65,9 @@ class BookmarkFragment : Fragment(R.layout.fragment_bookmark) {
 
 
     private fun initializeViews() {
+
+        (requireActivity() as MainActivity).supportActionBar?.title = getString(R.string.bookmarks)
+
         binding.recyclerView.apply {
             layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
             adapter = artistAdapter
