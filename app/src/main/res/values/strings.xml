@@ -7,4 +7,5 @@
     <string name="artist_image">Artist Image</string>
     <string name="rating">Rating:</string>
     <string name="spotify_logo">Spotify Logo</string>
+    <string name="bookmark">Bookmark</string>
 </resources>

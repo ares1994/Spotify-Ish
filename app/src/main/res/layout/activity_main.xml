@@ -13,7 +13,6 @@
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
         android:background="@color/spotify_green"
-        app:titleTextColor="@color/white"
         app:title="@string/spotify_ish"
         app:layout_constraintTop_toTopOf="parent" />
 

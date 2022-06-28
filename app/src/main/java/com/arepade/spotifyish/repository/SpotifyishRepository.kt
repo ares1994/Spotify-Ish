@@ -11,6 +11,9 @@ import com.arepade.spotifyish.utils.ARTIST_WORKS_REQUEST_SIZE
 
 class SpotifyIshRepository(private val client: ApolloClient, private val database: ArtistDatabase) {
 
+
+    val bookmarkedArtists = database.artistsDao.getAllArtists()
+
     suspend fun searchArtists(
         size: Int,
         name: String,

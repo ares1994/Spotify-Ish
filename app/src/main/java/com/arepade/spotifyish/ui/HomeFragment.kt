@@ -3,26 +3,26 @@ package com.arepade.spotifyish.ui
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.arepade.spotifyish.R
 import com.arepade.spotifyish.adapters.ArtistAdapter
-import com.arepade.spotifyish.database.Artist
 import com.arepade.spotifyish.databinding.FragmentHomeBinding
-import com.arepade.spotifyish.utils.SearchArtistQueryDiffUtil
+import com.arepade.spotifyish.utils.ArtistDiffUtil
 import com.arepade.spotifyish.utils.getProgressDialog
 import com.arepade.spotifyish.utils.handler
 import com.arepade.spotifyish.viewMoodel.ViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import java.lang.Exception
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 
 @AndroidEntryPoint
@@ -32,8 +32,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val viewModel by viewModels<ViewModel>()
 
-    private val searchAdapter: ArtistAdapter =
-        ArtistAdapter(SearchArtistQueryDiffUtil)
+    private val artistAdapter: ArtistAdapter =
+        ArtistAdapter(ArtistDiffUtil)
 
 
     private var _binding: FragmentHomeBinding? = null
@@ -63,7 +63,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun defineFunctions() {
 
-        searchAdapter.also {
+        artistAdapter.also {
             it.onEndOfListReached = {
                 commenceSearch()
             }
@@ -75,7 +75,19 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     viewModel.insertArtist(artist)
                 }
 
-                searchAdapter.notifyDataSetChanged()
+                artistAdapter.notifyDataSetChanged()
+            }
+
+            it.onNavigate = { artist, color ->
+                artist?.let {
+                    this.findNavController()
+                        .navigate(
+                            HomeFragmentDirections.actionHomeFragmentToDetailsFragment(
+                                it,
+                                color
+                            )
+                        )
+                }
             }
         }
 
@@ -109,7 +121,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun initializeViews() {
         binding.recyclerView.apply {
             layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-            adapter = searchAdapter
+            adapter = artistAdapter
 
             recycledViewPool.setMaxRecycledViews(0, 0)
 
@@ -121,11 +133,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun initializeObservers() {
 
         viewModel.searchedList.observe(viewLifecycleOwner, { data ->
-
-            searchAdapter.submitList(data.toList())
-            handler.postDelayed({
-                searchAdapter.notifyDataSetChanged()
-            }, 1000)
+            lifecycleScope.launchWhenResumed {
+                withContext(Dispatchers.IO) {
+                    artistAdapter.submitList(viewModel.mapBookmarkState(data.toList()))
+                    handler.postDelayed({
+                        artistAdapter.notifyDataSetChanged()
+                    }, 1000)
+                }
+            }
         })
 
 
@@ -152,6 +167,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onCreateOptionsMenu(menu, inflater)
 
         inflater.inflate(R.menu.home_menu, menu)
+
         val menuItem = menu.findItem(R.id.app_bar_search)
 
         val searchView = menuItem.actionView as SearchView
@@ -177,6 +193,23 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 return false
             }
         })
+
+    }
+
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+
+            R.id.bookmark -> {
+                this.findNavController()
+                    .navigate(HomeFragmentDirections.actionHomeFragmentToBookmarkFragment())
+                return true
+            }
+
+        }
+
+
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onDestroyView() {

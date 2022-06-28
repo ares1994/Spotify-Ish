@@ -20,7 +20,7 @@ import com.bumptech.glide.Glide
 import java.lang.Exception
 
 class ArtistAdapter(
-    diffCallback: DiffUtil.ItemCallback<Artist>,
+    diffCallback: DiffUtil.ItemCallback<Artist>
 ) :
     ListAdapter<Artist, ArtistAdapter.ViewHolder>(
         diffCallback
@@ -29,11 +29,12 @@ class ArtistAdapter(
 
     var onEndOfListReached: (() -> Unit)? = null
     var onBookmarkStateChange: ((artist: Artist, isBookmarked: Boolean) -> Unit)? = null
+    var onNavigate: ((artist: Artist?, color: String) -> Unit)? = null
 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        holder.bind(currentList, position, onEndOfListReached, onBookmarkStateChange)
+        holder.bind(currentList, position, onEndOfListReached, onBookmarkStateChange, onNavigate)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -53,7 +54,8 @@ class ArtistAdapter(
             list: List<Artist?>,
             position: Int,
             onEndOfListReached: (() -> Unit)?,
-            onBookmarkStateChange: ((artist: Artist, isBookmarked: Boolean) -> Unit)?
+            onBookmarkStateChange: ((artist: Artist, isBookmarked: Boolean) -> Unit)?,
+            onNavigate: ((artist: Artist, color: String) -> Unit)?
         ) {
 
             val value = list[position]
@@ -107,13 +109,16 @@ class ArtistAdapter(
             }
 
             binding.cardView.setOnClickListener {
-                Navigation.findNavController(it)
-                    .navigate(HomeFragmentDirections.actionHomeFragmentToDetailsFragment(value,COLORS[position % COLORS.size]))
+                onNavigate?.invoke(value, COLORS[position % COLORS.size])
             }
         }
 
 
     }
 
+
+    interface OnActionListener {
+        fun onNavigate()
+    }
 
 }

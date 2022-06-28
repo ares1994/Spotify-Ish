@@ -21,7 +21,7 @@ const val REQUEST_SIZE = 15
 const val ARTIST_WORKS_REQUEST_SIZE = 6
 
 
-val SearchArtistQueryDiffUtil = object : DiffUtil.ItemCallback<Artist>() {
+val ArtistDiffUtil = object : DiffUtil.ItemCallback<Artist>() {
     override fun areItemsTheSame(
         oldItem: Artist,
         newItem: Artist

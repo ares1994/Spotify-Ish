@@ -22,6 +22,8 @@ class ViewModel @Inject constructor(
     private val repo: SpotifyIshRepository,
 ) : ViewModel() {
 
+    val bookmarkedArtists = repo.bookmarkedArtists
+
     private val _searchedList = MutableLiveData<Set<Artist>>()
     val searchedList: LiveData<Set<Artist>> get() = _searchedList
 
@@ -106,16 +108,16 @@ class ViewModel @Inject constructor(
                             res.result?.search?.artists?.nodes?.let { artistData ->
 
                                 set.addAll(artistData.filterNotNull().map { i ->
-                                    Artist(i.mbid.toString(),
+                                    Artist(
+                                        i.mbid.toString(),
                                         i.rating?.value,
                                         i.name,
                                         try {
                                             i.fanArt?.thumbnails?.get(0)?.url as String?
                                         } catch (e: Exception) {
                                             null
-                                        },
-                                        repo.getArtists()
-                                            .find { artist -> artist.mbId == i.mbid } != null)
+                                        }
+                                    )
                                 })
                             }
 
@@ -142,24 +144,6 @@ class ViewModel @Inject constructor(
         }
     }
 
-
-    fun insertArtist(artist: Artist) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                repo.insertArtist(artist)
-            }
-        }
-    }
-
-    fun deleteArtist(artist: Artist) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                repo.deleteArtist(artist)
-            }
-        }
-    }
-
-
     fun fetchArtistDetails(mbID: String) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
@@ -182,6 +166,35 @@ class ViewModel @Inject constructor(
             }
         }
 
+
+    }
+
+
+    fun insertArtist(artist: Artist) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                repo.insertArtist(artist)
+            }
+        }
+    }
+
+    fun deleteArtist(artist: Artist) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                repo.deleteArtist(artist)
+            }
+        }
+    }
+
+
+    fun mapBookmarkState(data: List<Artist>): List<Artist> {
+
+        return data.map {
+            Artist(it.mbId, it.rating, it.name, it.image,
+                repo.getArtists()
+                    .find { artist -> artist.mbId == it.mbId } != null
+            )
+        }
 
     }
 
