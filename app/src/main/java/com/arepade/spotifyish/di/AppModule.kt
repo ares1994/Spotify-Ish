@@ -2,9 +2,11 @@ package com.arepade.spotifyish.di
 
 import android.app.Application
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.android.idlingResource
 import com.arepade.spotifyish.database.ArtistDatabase
 import com.arepade.spotifyish.database.getDatabase
 import com.arepade.spotifyish.repository.SpotifyIshRepository
+import com.arepade.spotifyish.utils.EspressoIdlingResource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,6 +26,7 @@ object AppModule {
     ): ApolloClient {
         return ApolloClient.Builder()
             .serverUrl("https://graphbrainz.herokuapp.com/graphql")
+            .idlingResource(EspressoIdlingResource.apolloIdlingResource)
             .build()
     }
 

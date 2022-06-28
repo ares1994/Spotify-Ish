@@ -119,7 +119,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_artists" />
+                tools:listitem="@layout/item_release" />
 
 
         </LinearLayout>
