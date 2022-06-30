@@ -5,6 +5,7 @@ import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.android.idlingResource
 import com.arepade.spotifyish.database.ArtistDatabase
 import com.arepade.spotifyish.database.getDatabase
+import com.arepade.spotifyish.repository.Repository
 import com.arepade.spotifyish.repository.SpotifyIshRepository
 import com.arepade.spotifyish.utils.EspressoIdlingResource
 import dagger.Module
@@ -18,7 +19,7 @@ import javax.inject.Singleton
 
 
 @Module
-@InstallIn(ActivityComponent::class,FragmentComponent::class,ViewModelComponent::class)
+@InstallIn(ActivityComponent::class, FragmentComponent::class, ViewModelComponent::class)
 object AppModule {
 
     @Provides
@@ -38,7 +39,7 @@ object AppModule {
 
 
     @Provides
-    fun provideSpotifyishRepository(client: ApolloClient, database: ArtistDatabase): SpotifyIshRepository {
+    fun provideSpotifyishRepository(client: ApolloClient, database: ArtistDatabase): Repository {
         return SpotifyIshRepository(client, database)
     }
 }

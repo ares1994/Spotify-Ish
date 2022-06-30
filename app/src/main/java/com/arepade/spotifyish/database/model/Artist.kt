@@ -1,4 +1,4 @@
-package com.arepade.spotifyish.database
+package com.arepade.spotifyish.database.model
 
 import android.os.Parcelable
 import androidx.room.ColumnInfo

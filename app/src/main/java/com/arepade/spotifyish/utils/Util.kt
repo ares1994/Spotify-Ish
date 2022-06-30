@@ -10,7 +10,7 @@ import android.os.Handler
 import androidx.recyclerview.widget.DiffUtil
 import com.arepade.spotifyish.LookupQuery
 import com.arepade.spotifyish.R
-import com.arepade.spotifyish.database.Artist
+import com.arepade.spotifyish.database.model.Artist
 import kotlinx.android.synthetic.main.spotify_dialog.*
 
 val handler = Handler()
@@ -40,7 +40,7 @@ val ArtistDiffUtil = object : DiffUtil.ItemCallback<Artist>() {
 
 val ReleaseDiffUtil = object : DiffUtil.ItemCallback<LookupQuery.Node?>() {
     override fun areItemsTheSame(oldItem: LookupQuery.Node, newItem: LookupQuery.Node): Boolean {
-        return "${oldItem.coverArtArchive} ${oldItem.title}" == "${newItem.coverArtArchive} ${newItem.title}"
+        return oldItem.id == newItem.id
     }
 
     override fun areContentsTheSame(oldItem: LookupQuery.Node, newItem: LookupQuery.Node): Boolean {

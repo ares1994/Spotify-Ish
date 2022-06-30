@@ -18,6 +18,7 @@ import com.arepade.spotifyish.databinding.FragmentHomeBinding
 import com.arepade.spotifyish.utils.ArtistDiffUtil
 import com.arepade.spotifyish.viewMoodel.ViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class BookmarkFragment : Fragment(R.layout.fragment_bookmark) {
@@ -55,10 +56,12 @@ class BookmarkFragment : Fragment(R.layout.fragment_bookmark) {
             }
 
             it.onNavigate = { artist, color ->
-               artist?.let{
-                   this.findNavController().navigate(BookmarkFragmentDirections
-                       .actionBookmarkFragmentToDetailsFragment(it,color))
-               }
+                artist?.let {
+                    this.findNavController().navigate(
+                        BookmarkFragmentDirections
+                            .actionBookmarkFragmentToDetailsFragment(it, color)
+                    )
+                }
             }
         }
     }
@@ -77,11 +80,11 @@ class BookmarkFragment : Fragment(R.layout.fragment_bookmark) {
     }
 
     private fun initializeObservers() {
-       lifecycleScope.launchWhenResumed {
-           viewModel.bookmarkedArtists.observe(viewLifecycleOwner,{
-               artistAdapter.submitList(it)
-           })
-       }
+        lifecycleScope.launchWhenResumed {
+            viewModel.bookmarkedArtists.collectLatest {
+                artistAdapter.submitList(it)
+            }
+        }
     }
 
     override fun onDestroyView() {

@@ -30,7 +30,7 @@
         tools:layout="@layout/fragment_details" >
         <argument
             android:name="artist"
-            app:argType="com.arepade.spotifyish.database.Artist" />
+            app:argType="com.arepade.spotifyish.database.model.Artist" />
         <argument
             android:name="color"
             app:argType="string" />

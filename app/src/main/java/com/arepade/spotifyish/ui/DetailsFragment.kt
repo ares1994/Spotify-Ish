@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.arepade.spotifyish.MainActivity
@@ -23,12 +24,13 @@ import com.arepade.spotifyish.viewMoodel.ViewModel
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import java.lang.Exception
 
 @AndroidEntryPoint
 class DetailsFragment : Fragment(R.layout.fragment_details) {
 
-    val args: DetailsFragmentArgs by navArgs()
+    private val args: DetailsFragmentArgs by navArgs()
     private val viewModel by viewModels<ViewModel>()
 
     private var _binding: FragmentDetailsBinding? = null
@@ -57,11 +59,11 @@ class DetailsFragment : Fragment(R.layout.fragment_details) {
 
 
     private fun defineErrorFunction() {
-        viewModel.onError = { message, onEnd ->
-            if (onEnd) {
-                Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-            } else {
-                Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).apply {
+        viewModel.setOnError { message, onEnd ->
+            val snackBar = Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
+
+            if (!onEnd) {
+                snackBar.apply {
 
                     setAction("OK") {
                         viewModel.fetchArtistDetails(args.artist.mbId)
@@ -73,8 +75,10 @@ class DetailsFragment : Fragment(R.layout.fragment_details) {
                             R.color.spotify_green
                         )
                     )
-                }.show()
+                }
             }
+
+            snackBar.show()
 
 
         }
@@ -117,19 +121,28 @@ class DetailsFragment : Fragment(R.layout.fragment_details) {
 
 
     private fun initializeObservers() {
-        viewModel.showSpotifyLoader.observe(viewLifecycleOwner, {
+        lifecycleScope.launchWhenResumed {
+
+            viewModel.artistDetails.collectLatest {
+                val releases = it?.lookup?.artist?.releases?.nodes
+
+                if (!releases.isNullOrEmpty()) {
+                    binding.headerTextView.text = getString(R.string.some_of, args.artist.name)
+                }
+                releaseAdapter.submitList(releases)
+            }
+        }
+
+
+        viewModel.showSpotifyLoader.observe(viewLifecycleOwner) {
             if (it) {
                 loadingDialog?.show()
             } else {
                 loadingDialog?.dismiss()
             }
-        })
+        }
 
 
-        viewModel.artistDetails.observe(viewLifecycleOwner, {
-            binding.headerTextView.text = "Some of ${args?.artist?.name}'s hits..."
-            releaseAdapter.submitList(it?.lookup?.artist?.releases?.nodes)
-        })
     }
 
     override fun onDestroyView() {

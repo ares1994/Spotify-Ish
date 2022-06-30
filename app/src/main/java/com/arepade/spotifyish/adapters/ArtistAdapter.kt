@@ -1,19 +1,14 @@
 package com.arepade.spotifyish.adapters
 
 import android.graphics.Color
-import android.os.Handler
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.arepade.spotifyish.R
-import com.arepade.spotifyish.database.Artist
+import com.arepade.spotifyish.database.model.Artist
 import com.arepade.spotifyish.databinding.ItemArtistsBinding
-import com.arepade.spotifyish.ui.HomeFragment
-import com.arepade.spotifyish.ui.HomeFragmentDirections
 import com.arepade.spotifyish.utils.COLORS
 import com.bumptech.glide.Glide
 

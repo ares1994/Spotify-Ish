@@ -1,18 +1,17 @@
 package com.arepade.spotifyish.paging
 
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.arepade.spotifyish.SearchArtistsQuery
-import com.arepade.spotifyish.database.Artist
+import com.arepade.spotifyish.database.model.Artist
+import com.arepade.spotifyish.repository.Repository
 import com.arepade.spotifyish.repository.SpotifyIshRepository
 import com.arepade.spotifyish.utils.REQUEST_SIZE
 import java.lang.Exception
 
 
 class SpotifyIshPagingSource constructor(
-    private val repository: SpotifyIshRepository,
+    private val repository: Repository,
     private val query: String
 ) :
     PagingSource<String, Artist>() {
@@ -30,7 +29,7 @@ class SpotifyIshPagingSource constructor(
 
 
         return when (val res = repository.searchArtists(REQUEST_SIZE, query, key)) {
-            is SpotifyIshRepository.SpotifyIshResponse.Result -> {
+            is Repository.Response.Result -> {
                 try {
                     val artists =  res.result?.search?.artists?.nodes?.filterNotNull()!!.map {
                         Artist(it.mbid.toString(),
@@ -53,7 +52,7 @@ class SpotifyIshPagingSource constructor(
                     LoadResult.Error(e)
                 }
             }
-            is SpotifyIshRepository.SpotifyIshResponse.Error -> {
+            is Repository.Response.Error -> {
                 LoadResult.Error(Throwable(res.error))
             }
         }

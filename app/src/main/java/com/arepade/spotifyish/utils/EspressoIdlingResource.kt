@@ -6,7 +6,11 @@ import com.apollographql.apollo3.android.ApolloIdlingResource
 object EspressoIdlingResource {
 
     private const val RESOURCE = "GLOBAL"
+
+
     val apolloIdlingResource = ApolloIdlingResource("apolloIdlingResource")
+
+
     @JvmField
     val countingIdlingResource = CountingIdlingResource(RESOURCE)
 

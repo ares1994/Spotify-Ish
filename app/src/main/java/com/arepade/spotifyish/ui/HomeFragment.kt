@@ -23,6 +23,7 @@ import com.arepade.spotifyish.viewMoodel.ViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.withContext
 
 
@@ -50,7 +51,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         inputManager =
             requireActivity().applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
         loadingDialog = getProgressDialog(requireContext())
 
 
@@ -93,7 +93,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
 
-        viewModel.onError = { message, onEnd ->
+        viewModel.setOnError { message, onEnd ->
             if (onEnd) {
                 Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
             } else {
@@ -125,7 +125,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.recyclerView.apply {
             layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
             adapter = artistAdapter
-
             recycledViewPool.setMaxRecycledViews(0, 0)
 
         }
@@ -135,35 +134,32 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun initializeObservers() {
 
-        viewModel.searchedList.observe(viewLifecycleOwner, { data ->
-            lifecycleScope.launchWhenResumed {
-                withContext(Dispatchers.IO) {
-                    artistAdapter.submitList(viewModel.mapBookmarkState(data.toList()))
-                    handler.postDelayed({
-                        artistAdapter.notifyDataSetChanged()
-                    }, 1000)
-                }
+
+        lifecycleScope.launchWhenResumed {
+            viewModel.searchedData.collectLatest { data ->
+                artistAdapter.submitList(data)
             }
-        })
+        }
 
 
-
-        viewModel.showSpotifyLoader.observe(viewLifecycleOwner, {
+        viewModel.showSpotifyLoader.observe(viewLifecycleOwner) {
             if (it) {
                 loadingDialog?.show()
             } else {
                 loadingDialog?.dismiss()
             }
-        })
+        }
 
 
-        viewModel.showBottomLoader.observe(viewLifecycleOwner, {
+        viewModel.showBottomLoader.observe(viewLifecycleOwner) {
             if (it) {
                 binding.progressBar.visibility = View.VISIBLE
             } else {
                 binding.progressBar.visibility = View.GONE
             }
-        })
+        }
+
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

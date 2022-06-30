@@ -4,14 +4,15 @@ import androidx.lifecycle.*
 import androidx.lifecycle.ViewModel
 import androidx.paging.*
 import com.arepade.spotifyish.LookupQuery
-import com.arepade.spotifyish.SearchArtistsQuery
-import com.arepade.spotifyish.database.Artist
+import com.arepade.spotifyish.database.model.Artist
 import com.arepade.spotifyish.paging.SpotifyIshPagingSource
-import com.arepade.spotifyish.repository.SpotifyIshRepository
+import com.arepade.spotifyish.repository.Repository
 import com.arepade.spotifyish.utils.REQUEST_SIZE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.Exception
@@ -19,16 +20,25 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ViewModel @Inject constructor(
-    private val repo: SpotifyIshRepository,
+    private val repo: Repository,
 ) : ViewModel() {
 
-    val bookmarkedArtists = repo.bookmarkedArtists
+    val bookmarkedArtists = repo.bookmarkedArtists.asFlow()
 
-    private val _searchedList = MutableLiveData<Set<Artist>>()
-    val searchedList: LiveData<Set<Artist>> get() = _searchedList
+    private val _searchedData = MutableLiveData<Set<Artist>>()
+    val searchedData: Flow<List<Artist>>
+        get() =
+            _searchedData.asFlow().combine(bookmarkedArtists) { a, b ->
+                a.map {
+                    Artist(it.mbId, it.rating, it.name, it.image,
+                        b
+                            .find { artist -> artist.mbId == it.mbId } != null
+                    )
+                }
+            }
 
     private val _artistDetails = MutableLiveData<LookupQuery.Data?>()
-    val artistDetails: LiveData<LookupQuery.Data?> get() = _artistDetails
+    val artistDetails: Flow<LookupQuery.Data?> get() = _artistDetails.asFlow()
 
     private val _showSpotifyLoader = MutableLiveData<Boolean>()
     val showSpotifyLoader: LiveData<Boolean> get() = _showSpotifyLoader
@@ -39,17 +49,8 @@ class ViewModel @Inject constructor(
     private var after: String? = null
     private var hasMore: Boolean = true
     private var currentQuery: String = ""
-    var onError: ((message: String, onEnd: Boolean) -> Unit)? = null
+    private var onError: ((message: String, onEnd: Boolean) -> Unit)? = null
 
-    @ExperimentalCoroutinesApi
-    @ExperimentalPagingApi
-    fun fetchArtists(query: String): LiveData<PagingData<Artist>> {
-        return Pager(
-            config = PagingConfig(30),
-        ) {
-            SpotifyIshPagingSource(repo, query)
-        }.liveData.cachedIn(viewModelScope)
-    }
 
     private fun spotifyLoaderState(state: Boolean) {
         _showSpotifyLoader.postValue(state)
@@ -60,13 +61,29 @@ class ViewModel @Inject constructor(
     }
 
 
+    fun setOnError(value: (message: String, onEnd: Boolean) -> Unit) {
+        onError = value
+    }
+
+
+    @ExperimentalCoroutinesApi
+    @ExperimentalPagingApi
+    fun fetchArtists(query: String): LiveData<PagingData<Artist>> {
+        return Pager(
+            config = PagingConfig(15),
+        ) {
+            SpotifyIshPagingSource(repo, query)
+        }.liveData.cachedIn(viewModelScope)
+    }
+
+
     fun fetchArtists(query: String? = null) {
 
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 if (query != null && currentQuery != query) {
                     currentQuery = query
-                    _searchedList.postValue(emptySet())
+                    _searchedData.postValue(emptySet())
                     hasMore = true
                     after = null
 
@@ -87,13 +104,13 @@ class ViewModel @Inject constructor(
 
 
                 when (val res = repo.searchArtists(REQUEST_SIZE, currentQuery, after)) {
-                    is SpotifyIshRepository.SpotifyIshResponse.Error -> {
+                    is Repository.Response.Error -> {
 
                         onError?.invoke("${res.error}. Retry?", false)
                         bottomLoaderState(false)
                         spotifyLoaderState(false)
                     }
-                    is SpotifyIshRepository.SpotifyIshResponse.Result -> {
+                    is Repository.Response.Result -> {
 
 
                         try {
@@ -103,7 +120,7 @@ class ViewModel @Inject constructor(
 
                             val set = mutableSetOf<Artist>()
 
-                            _searchedList.value?.let { data -> set.addAll(data) }
+                            _searchedData.value?.let { data -> set.addAll(data) }
 
                             res.result?.search?.artists?.nodes?.let { artistData ->
 
@@ -123,7 +140,7 @@ class ViewModel @Inject constructor(
 
 
 
-                            _searchedList.postValue(set)
+                            _searchedData.postValue(set)
 
 
 
@@ -152,12 +169,12 @@ class ViewModel @Inject constructor(
 
 
                 when (val res = repo.getArtistDetails(mbID)) {
-                    is SpotifyIshRepository.SpotifyIshResponse.Result -> {
+                    is Repository.Response.Result -> {
                         _artistDetails.postValue(res.result)
                     }
 
-                    is SpotifyIshRepository.SpotifyIshResponse.Error -> {
-                        onError?.invoke(res.error, false)
+                    is Repository.Response.Error -> {
+                        onError?.invoke("${res.error}. Retry?", false)
                     }
                 }
 
@@ -184,18 +201,6 @@ class ViewModel @Inject constructor(
                 repo.deleteArtist(artist)
             }
         }
-    }
-
-
-    fun mapBookmarkState(data: List<Artist>): List<Artist> {
-
-        return data.map {
-            Artist(it.mbId, it.rating, it.name, it.image,
-                repo.getArtists()
-                    .find { artist -> artist.mbId == it.mbId } != null
-            )
-        }
-
     }
 
 

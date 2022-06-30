@@ -3,6 +3,7 @@ package com.arepade.spotifyish.database
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.arepade.spotifyish.database.model.Artist
 
 
 @Dao

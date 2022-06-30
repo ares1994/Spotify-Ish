@@ -10,4 +10,5 @@
     <string name="bookmark">Bookmark</string>
     <string name="bookmarks">Bookmarks</string>
     <string name="details">Details</string>
+    <string name="some_of">Some of %s\'s greatest hits...</string>
 </resources>

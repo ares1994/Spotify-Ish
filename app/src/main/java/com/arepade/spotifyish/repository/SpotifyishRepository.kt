@@ -1,24 +1,26 @@
 package com.arepade.spotifyish.repository
 
 
+import androidx.lifecycle.LiveData
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.exception.ApolloException
 import com.arepade.spotifyish.LookupQuery
 import com.arepade.spotifyish.SearchArtistsQuery
-import com.arepade.spotifyish.database.Artist
+import com.arepade.spotifyish.database.model.Artist
 import com.arepade.spotifyish.database.ArtistDatabase
 import com.arepade.spotifyish.utils.ARTIST_WORKS_REQUEST_SIZE
 
-class SpotifyIshRepository(private val client: ApolloClient, private val database: ArtistDatabase) {
+class SpotifyIshRepository(private val client: ApolloClient, private val database: ArtistDatabase) :
+    Repository {
 
 
-    val bookmarkedArtists = database.artistsDao.getAllArtists()
+    override val bookmarkedArtists: LiveData<List<Artist>> = database.artistsDao.getAllArtists()
 
-    suspend fun searchArtists(
+    override suspend fun searchArtists(
         size: Int,
         name: String,
         after: String?
-    ): SpotifyIshResponse<SearchArtistsQuery.Data?> {
+    ): Repository.Response<SearchArtistsQuery.Data?> {
 
 
         return try {
@@ -28,35 +30,35 @@ class SpotifyIshRepository(private val client: ApolloClient, private val databas
 
             if (artists != null && !result.hasErrors()) {
 
-                SpotifyIshResponse.Result(result.data)
+                Repository.Response.Result(result.data)
             } else {
-                SpotifyIshResponse.Error(
+                Repository.Response.Error(
                     result.errors?.get(0)?.message ?: "Failed to retrieve artists"
                 )
             }
 
 
         } catch (e: ApolloException) {
-            SpotifyIshResponse.Error(e.message ?: "Failed to retrieve artists")
+            Repository.Response.Error(e.message ?: "Failed to retrieve artists")
         }
 
     }
 
-    fun insertArtist(artist: Artist) {
+    override fun insertArtist(artist: Artist) {
         database.artistsDao.insert(artist)
     }
 
-    fun deleteArtist(artist: Artist) {
+    override fun deleteArtist(artist: Artist) {
         database.artistsDao.deleteArtist(artist.mbId)
     }
 
 
-    fun getArtists(): List<Artist> {
+    override fun getArtists(): List<Artist> {
         return database.artistsDao.getArtists()
     }
 
 
-    suspend fun getArtistDetails(mbID: String): SpotifyIshResponse<LookupQuery.Data?> {
+    override suspend fun getArtistDetails(mbID: String): Repository.Response<LookupQuery.Data?> {
 
         return try {
             val result = client.query(LookupQuery(mbID, ARTIST_WORKS_REQUEST_SIZE)).execute()
@@ -65,25 +67,44 @@ class SpotifyIshRepository(private val client: ApolloClient, private val databas
 
             if (artist != null && !result.hasErrors()) {
 
-                SpotifyIshResponse.Result(result.data)
+                Repository.Response.Result(result.data)
             } else {
-                SpotifyIshResponse.Error(
+                Repository.Response.Error(
                     result.errors?.get(0)?.message ?: "Failed to retrieve artist's information"
                 )
             }
 
 
         } catch (e: ApolloException) {
-            SpotifyIshResponse.Error(e.message ?: "Failed to retrieve artist's information")
+            Repository.Response.Error(e.message ?: "Failed to retrieve artist's information")
         }
 
     }
 
 
-    sealed class SpotifyIshResponse<T> {
-        class Result<T>(val result: T) : SpotifyIshResponse<T>()
-        class Error<T>(val error: String) : SpotifyIshResponse<T>()
-    }
+}
 
+interface Repository {
+
+    val bookmarkedArtists: LiveData<List<Artist>>
+
+    suspend fun searchArtists(
+        size: Int,
+        name: String,
+        after: String?
+    ): Response<SearchArtistsQuery.Data?>
+
+    fun insertArtist(artist: Artist)
+
+    fun deleteArtist(artist: Artist)
+
+    fun getArtists(): List<Artist>
+
+    suspend fun getArtistDetails(mbID: String): Response<LookupQuery.Data?>
+
+    sealed class Response<T> {
+        class Result<T>(val result: T) : Response<T>()
+        class Error<T>(val error: String) : Response<T>()
+    }
 
 }
