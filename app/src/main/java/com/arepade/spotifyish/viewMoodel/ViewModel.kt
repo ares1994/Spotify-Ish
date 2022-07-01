@@ -23,7 +23,7 @@ class ViewModel @Inject constructor(
     private val repo: Repository,
 ) : ViewModel() {
 
-    val bookmarkedArtists = repo.bookmarkedArtists.asFlow()
+    val bookmarkedArtists = repo.bookmarkedArtists
 
     private val _searchedData = MutableLiveData<Set<Artist>>()
     val searchedData: Flow<List<Artist>>

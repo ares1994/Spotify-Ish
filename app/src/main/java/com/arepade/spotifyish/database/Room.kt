@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.arepade.spotifyish.database.model.Artist
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
@@ -12,7 +13,7 @@ interface ArtistsDao {
     fun getArtist(mbId: String): Artist
 
     @Query("select * from artist")
-    fun getAllArtists(): LiveData<List<Artist>>
+    fun getAllArtists(): Flow<List<Artist>>
 
     @Query("select * from artist")
     fun getArtists(): List<Artist>

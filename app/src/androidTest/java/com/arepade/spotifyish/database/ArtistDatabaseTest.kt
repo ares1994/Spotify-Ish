@@ -77,7 +77,7 @@ class ArtistDatabaseTest {
     }
 
     companion object {
-        val TEST_ARTIST = Artist("aaaaa-bbbbb-ccccc-dddddd-eeeeee", 5.0, "Eminem", "", false, 1)
+        val TEST_ARTIST = Artist("aaaaa-bbbbb-ccccc-dddddd-eeeeee", 5.0, "Logic", "", false, 1)
     }
 
 }

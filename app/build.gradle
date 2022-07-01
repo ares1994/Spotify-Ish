@@ -91,6 +91,8 @@ dependencies {
 
     implementation("com.apollographql.apollo3:apollo-idling-resource:3.0.0-beta02")
 
+    //Turbine
+    androidTestImplementation 'app.cash.turbine:turbine:0.7.0'
 
 
     // Navigation Component
@@ -102,9 +104,8 @@ dependencies {
     kapt "com.google.dagger:hilt-compiler:2.38.1"
 
 
-
     //Room
-    implementation "androidx.room:room-runtime:2.3.0"
+    implementation "androidx.room:room-ktx:2.3.0"
     kapt "androidx.room:room-compiler:2.3.0"
     //Paging
     implementation "androidx.paging:paging-runtime-ktx:3.0.0"
