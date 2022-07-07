@@ -13,7 +13,6 @@ import com.arepade.spotifyish.R
 import com.arepade.spotifyish.database.model.Artist
 import kotlinx.android.synthetic.main.spotify_dialog.*
 
-val handler = Handler()
 
 val COLORS = listOf("#07d2c3", "#9e7be3", "#fb5da5", "#ff9a34", "#6891ff")
 
@@ -72,4 +71,4 @@ fun getProgressDialog(context: Context): Dialog {
     }
 }
 
-
+val handler = Handler()

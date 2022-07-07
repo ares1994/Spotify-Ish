@@ -9,6 +9,16 @@ import kotlin.random.Random
 
 class FakeRepository(private val database: ArtistDatabase) : Repository {
 
+    companion object {
+        val artistList = listOf(
+            SearchArtistsQuery.Node(
+                "Logic", "44", SearchArtistsQuery.Rating(5.0),
+                SearchArtistsQuery.FanArt(emptyList())
+            )
+        )
+    }
+
+
     override val bookmarkedArtists: Flow<List<Artist>> = database.artistsDao.getAllArtists()
 
 
@@ -23,12 +33,7 @@ class FakeRepository(private val database: ArtistDatabase) : Repository {
                     SearchArtistsQuery.Data(
                         SearchArtistsQuery.Search(
                             SearchArtistsQuery.Artists(
-                                listOf(
-                                    SearchArtistsQuery.Node(
-                                        "Logic", "44", SearchArtistsQuery.Rating(5.0),
-                                        SearchArtistsQuery.FanArt(emptyList())
-                                    )
-                                ),
+                                artistList,
                                 SearchArtistsQuery.PageInfo(
                                     null, null, false
                                 )
