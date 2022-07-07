@@ -30,7 +30,7 @@ class ViewModelTest {
     private lateinit var db: ArtistDatabase
     private lateinit var repo: FakeRepository
     private lateinit var viewModel: ViewModel
-
+    private var error: String? = null
 
     @Before
     fun setup() {
@@ -47,20 +47,31 @@ class ViewModelTest {
 
         viewModel = ViewModel(repo)
 
+
+        viewModel.setOnError { message, _ ->
+            error = message
+        }
+
     }
 
     @ExperimentalCoroutinesApi
     @Test
-    fun searchQueryValidateFlow(): Unit = runBlocking(Dispatchers.Default) {
+    fun fetchArtistsValidation(): Unit = runBlocking(Dispatchers.Default) {
 
 
         viewModel.fetchArtists()
 
+
         val actualData = FakeRepository.artistList[0]
-        val flowData = viewModel.searchedData.first()[0]
+        val flowData = viewModel.searchedData.first()
 
         launch {
-            assert(actualData.mbid == flowData.mbId)
+            if (!error.isNullOrBlank()) {
+                assert(error == "Failed to retrieve artists")
+            } else {
+            assert(!flowData.isNullOrEmpty())
+            assert(actualData.mbid == flowData[0].mbId)
+            }
             this.cancel()
         }
 
